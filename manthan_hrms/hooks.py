@@ -8,7 +8,31 @@ app_license = "mit"
 # Apps
 # ------------------
 
-# required_apps = []
+required_apps = ["frappe/erpnext", "frappe/hrms", "india_payroll"]
+
+# Company-agnostic HR config, reused as-is on every client site (Prudeno Wealth, NS Wealth).
+# Company-specific records (Company, Departments, Holiday List, Leave Policy) are created by
+# manthan_hrms.setup.day1 instead, because their names depend on the company.
+fixtures = [
+	{"dt": "Module Profile", "filters": [["name", "=", "Manthan HR Only"]]},
+	{"dt": "Leave Type", "filters": [["name", "in", ["Casual Leave", "Sick Leave", "Earned Leave"]]]},
+	{
+		"dt": "Designation",
+		"filters": [
+			[
+				"name",
+				"in",
+				[
+					"Relationship Manager",
+					"Compliance Officer",
+					"Operations Executive",
+					"Admin Executive",
+					"Research Analyst",
+				],
+			]
+		],
+	},
+]
 
 # Each item in the list will be shown as an app in the apps page
 # add_to_apps_screen = [
@@ -83,7 +107,8 @@ app_license = "mit"
 # ------------
 
 # before_install = "manthan_hrms.install.before_install"
-# after_install = "manthan_hrms.install.after_install"
+after_install = "manthan_hrms.setup.install.after_install"
+after_migrate = "manthan_hrms.setup.install.after_migrate"
 
 # Uninstallation
 # ------------
@@ -143,13 +168,11 @@ app_license = "mit"
 # ---------------
 # Hook on document methods and events
 
-# doc_events = {
-# 	"*": {
-# 		"on_update": "method",
-# 		"on_cancel": "method",
-# 		"on_trash": "method"
-# 	}
-# }
+doc_events = {
+	"Employee Separation": {
+		"before_submit": "manthan_hrms.compliance.employee_separation.validate_exit_checklist",
+	},
+}
 
 # Scheduled Tasks
 # ---------------

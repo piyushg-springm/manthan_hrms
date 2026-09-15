@@ -1,0 +1,264 @@
+{
+ "actions": [],
+ "allow_rename": 0,
+ "autoname": "FPD-.YYYY.-.#####",
+ "creation": "2026-09-15 18:00:00.000000",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "employee",
+  "employee_name",
+  "company",
+  "column_break_header",
+  "financial_year",
+  "declaration_date",
+  "department",
+  "designation",
+  "declaration_section",
+  "no_criminal_conviction",
+  "no_regulatory_action",
+  "no_disciplinary_proceedings",
+  "column_break_declaration",
+  "not_insolvent",
+  "no_conflict_of_interest",
+  "certifications_valid",
+  "disclosures_section",
+  "disclosures",
+  "employee_confirmation",
+  "review_section",
+  "reviewed_by",
+  "review_date",
+  "column_break_review",
+  "review_remarks",
+  "amended_from"
+ ],
+ "fields": [
+  {
+   "fieldname": "employee",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Employee",
+   "options": "Employee",
+   "reqd": 1
+  },
+  {
+   "fetch_from": "employee.employee_name",
+   "fieldname": "employee_name",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Employee Name",
+   "read_only": 1
+  },
+  {
+   "fetch_from": "employee.company",
+   "fieldname": "company",
+   "fieldtype": "Link",
+   "in_standard_filter": 1,
+   "label": "Company",
+   "options": "Company",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_header",
+   "fieldtype": "Column Break"
+  },
+  {
+   "description": "e.g. 2026-27",
+   "fieldname": "financial_year",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Financial Year",
+   "reqd": 1
+  },
+  {
+   "default": "Today",
+   "fieldname": "declaration_date",
+   "fieldtype": "Date",
+   "label": "Declaration Date",
+   "reqd": 1
+  },
+  {
+   "fetch_from": "employee.department",
+   "fieldname": "department",
+   "fieldtype": "Link",
+   "label": "Department",
+   "options": "Department",
+   "read_only": 1
+  },
+  {
+   "fetch_from": "employee.designation",
+   "fieldname": "designation",
+   "fieldtype": "Link",
+   "label": "Designation",
+   "options": "Designation",
+   "read_only": 1
+  },
+  {
+   "description": "Tick each statement that is true. Explain anything left unticked under Disclosures.",
+   "fieldname": "declaration_section",
+   "fieldtype": "Section Break",
+   "label": "Fit and Proper Declaration"
+  },
+  {
+   "default": "0",
+   "fieldname": "no_criminal_conviction",
+   "fieldtype": "Check",
+   "label": "I have not been convicted of any offence involving fraud, moral turpitude or economic offences"
+  },
+  {
+   "default": "0",
+   "fieldname": "no_regulatory_action",
+   "fieldtype": "Check",
+   "label": "No SEBI, AMFI or other regulatory order, debarment or show-cause notice is outstanding against me"
+  },
+  {
+   "default": "0",
+   "fieldname": "no_disciplinary_proceedings",
+   "fieldtype": "Check",
+   "label": "No disciplinary proceedings are pending or concluded against me"
+  },
+  {
+   "fieldname": "column_break_declaration",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "0",
+   "fieldname": "not_insolvent",
+   "fieldtype": "Check",
+   "label": "I have not been declared insolvent or of unsound mind"
+  },
+  {
+   "default": "0",
+   "fieldname": "no_conflict_of_interest",
+   "fieldtype": "Check",
+   "label": "I have no undisclosed conflict of interest with clients or the firm"
+  },
+  {
+   "default": "0",
+   "fieldname": "certifications_valid",
+   "fieldtype": "Check",
+   "label": "My NISM certification and ARN/EUIN (where applicable) are valid"
+  },
+  {
+   "fieldname": "disclosures_section",
+   "fieldtype": "Section Break",
+   "label": "Disclosures"
+  },
+  {
+   "fieldname": "disclosures",
+   "fieldtype": "Small Text",
+   "label": "Disclosures / Exceptions"
+  },
+  {
+   "default": "0",
+   "fieldname": "employee_confirmation",
+   "fieldtype": "Check",
+   "label": "I confirm the above is true and complete, and I will inform Compliance of any change"
+  },
+  {
+   "fieldname": "review_section",
+   "fieldtype": "Section Break",
+   "label": "Compliance Review"
+  },
+  {
+   "fieldname": "reviewed_by",
+   "fieldtype": "Link",
+   "label": "Reviewed By",
+   "options": "User",
+   "read_only": 1
+  },
+  {
+   "fieldname": "review_date",
+   "fieldtype": "Date",
+   "label": "Review Date",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_review",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "review_remarks",
+   "fieldtype": "Small Text",
+   "label": "Review Remarks"
+  },
+  {
+   "fieldname": "amended_from",
+   "fieldtype": "Link",
+   "label": "Amended From",
+   "no_copy": 1,
+   "options": "Fit and Proper Declaration",
+   "print_hide": 1,
+   "read_only": 1,
+   "search_index": 1
+  }
+ ],
+ "index_web_pages_for_search": 0,
+ "is_submittable": 1,
+ "links": [],
+ "modified": "2026-09-15 18:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Manthan HRMS",
+ "name": "Fit and Proper Declaration",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "amend": 1,
+   "cancel": 1,
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "submit": 1,
+   "write": 1
+  },
+  {
+   "amend": 1,
+   "cancel": 1,
+   "create": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Manthan Compliance Reviewer",
+   "share": 1,
+   "submit": 1,
+   "write": 1
+  },
+  {
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "HR Manager"
+  },
+  {
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "HR User"
+  },
+  {
+   "create": 1,
+   "print": 1,
+   "read": 1,
+   "write": 1,
+   "role": "Employee"
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "title_field": "employee_name",
+ "track_changes": 1
+}
