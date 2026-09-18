@@ -1,7 +1,8 @@
 """Pilot Day 1 setup (Sprint 1 + Sprint 2) for one client site.
 
 Idempotent: every step checks for an existing record first, so it is safe to re-run.
-For another client (e.g. NS Wealth) change the COMPANY_* constants.
+The client (company name, abbreviation, domain) comes from `manthan_hrms_client` in site_config.json,
+see manthan_hrms.setup.clients.
 
     bench --site prudeno-prod.localhost execute manthan_hrms.setup.day1.run_sprint1
     bench --site prudeno-prod.localhost execute manthan_hrms.setup.day1.run_sprint2
@@ -11,12 +12,14 @@ For another client (e.g. NS Wealth) change the COMPANY_* constants.
 import frappe
 from frappe.utils import getdate, today
 
-COMPANY_NAME = "Prudeno Wealth"
-COMPANY_ABBR = "PW"
-COMPANY_DOMAIN = "prudenowealth.example"  # fake domain: no real client data in the pilot
+from manthan_hrms.setup.clients import MODULE_PROFILE, get_client
+
+CLIENT = get_client(strict=True)  # every setup module imports these constants from here
+COMPANY_NAME = CLIENT.company_name
+COMPANY_ABBR = CLIENT.company_abbr
+COMPANY_DOMAIN = CLIENT.company_domain
 YEAR = 2026
 
-MODULE_PROFILE = "Manthan HR Only"
 HR_ROLE_PROFILE = "HR"  # created by hrms setup (hrms/setup.py DEFAULT_ROLE_PROFILES)
 TEST_HR_USER = f"hr.test@{COMPANY_DOMAIN}"
 

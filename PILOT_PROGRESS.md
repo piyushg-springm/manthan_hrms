@@ -1,7 +1,7 @@
 # Manthan HRMS Pilot — Progress Log
 
-Status as of **2026-09-15**: Day 1, Day 2 and Day 3 (Sprints 1–6) done and verified for **Prudeno Wealth**.
-Next: **Day 4** (Sprint 7 branding + walkthrough, Sprint 8 package + start NS Wealth).
+Status as of **2026-09-15**: Days 1–3 (Sprints 1–6) and **Sprint 7** done and verified for **Prudeno Wealth**.
+**Sprint 8**: package done and verified on Prudeno Wealth; NS Wealth site creation is waiting for the new-site command (section 6).
 
 - Requirement doc: `~/piyush/work/spring-money/DOING/HRMS/manthan-hrms-pilot-plan.html` (5 days / 10 sprints)
 - Bench: `~/piyush/work/spring-money/frappe-bench` — frappe 15.120.0, erpnext 15.121.0, hrms 15.64.0, Python 3.11
@@ -30,6 +30,7 @@ All `run_sprintN` functions are **idempotent** (safe to re-run; verified no dupl
 | 1 | `manthan_hrms.setup.day1.run_sprint1`, `run_sprint2` | `day1.verify_day1` (19 checks) |
 | 2 | `manthan_hrms.setup.day2.run_sprint3`, `run_sprint4` | `day2.verify_day2` (37 checks) |
 | 3 | `manthan_hrms.setup.day3.run_sprint5`, `run_sprint6` | `day3.verify_day3` (21 checks + payslip table) |
+| 4 | `manthan_hrms.setup.day4.run_sprint7`, `run_sprint8` | `day4.verify_sprint7` (28 checks, re-runs Days 1–3), `day4.verify_sprint8` (13 here, 17 on a dedicated site) |
 
 After changing hooks (`override_doctype_class`, `doc_events`): `bench --site $S clear-cache` and restart `bench start`.
 
@@ -158,28 +159,93 @@ Fixtures (`hooks.py`): Module Profile, 3 Leave Types, 5 Designations.
 
 ---
 
-## 6. Day 4 — what's next (from requirement doc)
+## 6. Day 4 — Sprint 7 + Sprint 8 (`setup/day4.py`)
 
-### Sprint 7 — Branding + full walkthrough
-DoD:
-- [ ] Logo and favicon visible on login and inside the system
-- [ ] Primary colour changed from default
-- [ ] Full walkthrough completed, all errors fixed
+### Sprint 7 — Branding + full walkthrough ✅ (`verify_sprint7` 28/28)
+- [x] Logo and favicon inside the system — **for Manthan HR users** (decision below)
+- [x] Primary colour changed from default: buttons `#0C7987` (5.12:1 with white text), accents `#1DB390`
+- [x] Full walkthrough done; 1 bug found and fixed
+- [ ] Logo on the **login page**: deliberately not done on this shared site; done site-wide on NS Wealth (dedicated site)
 
-Notes / open questions:
-- Branding on this **shared** site affects every app/user on it (Website Settings / Navbar Settings are global). Decide: apply here anyway, or only on the NS Wealth site / a theme scoped per site.
-- Walkthrough checklist: HR user desk (sidebar limited), employee self-service (leave apply, expense claim, payslip view, F&P declaration), onboarding, attendance, leave approval, expense payment, payroll entry, cert reminder bell, exit checklist block.
+**Decision — branding scope**: prudeno-prod has 484 users of other Manthan apps, and the login page, favicon and
+Website Theme are site-wide. So on a shared site the brand is only for users on Module Profile "Manthan HR Only":
+- `branding/boot.py` `extend_bootinfo` hook sets `app_logo_url` + `manthan_brand` in boot for those users
+  (runs on every desk load, after the bootinfo cache).
+- `public/js/manthan_branding.js` (`app_include_js`, plain file, no bundle) sets `--primary`, `--primary-color`,
+  `--btn-primary`, `--border-primary` and the favicon; it does nothing when boot has no brand.
+- Administrator and other apps' users keep the ERPNext logo/colours; Website Settings untouched (checked).
+- Dedicated client site: `manthan_hrms_dedicated_site: 1` in site_config → every user gets the brand, and
+  `apply_site_branding` sets Website Settings `app_logo` / `favicon` / `app_name` / `head_html` (login colour),
+  Navbar Settings logo and System Settings app name.
+
+**Brand source**: `manthan-os-monorepo/packages/branding` (tenants/*.ts colours, assets/*). Copied into
+`public/images/brands/{manthan,prudeno,nswealth}`; big PNGs resized. `branding/brands.py` picks the first shade with
+≥ 4.5:1 contrast for white button text (Prudeno `#1DB390` and Manthan `#268A6A` fail, so buttons use a darker shade).
+
+**Walkthrough** (`verify_sprint7`, as each user, plus a Playwright browser pass with screenshots):
+- Day 1/2/3 verify re-run: 19/19, 37/37, 21/21.
+- HR user: 11 workspaces, all from HR apps; opens Employee, Onboarding, Attendance, Leave, Expense, Payroll Entry,
+  Salary Slip, Employee Separation, Fit & Proper; sees 15 slips; NISM reminder in the bell.
+- Priya (employee): only her payslip, leave balances, own F&P declaration; can raise Leave / Expense / F&P /
+  Attendance Request; cannot open Payroll Entry, SSA, Employee Separation.
+- Kavya sees her report Siddharth; incomplete exit checklist still blocked; no Error Log entries, no browser JS errors.
+- **Bug fixed**: hrms v15 gives Employee Separation to **System Manager only**, so HR could not run an exit (the Day 3
+  test ran as Administrator). `grant_exit_checklist_access` adds a Custom DocPerm for **Manthan Compliance Reviewer**
+  (not HR Manager/HR User — real users hold those). Exported as fixture.
+- Open (cosmetic): employee users see HR workspace names in the sidebar (Recruitment, Performance…); the records
+  are still blocked by permissions.
 
 ### Sprint 8 — Package the setup, start NS Wealth
-DoD:
-- [ ] Prudeno Wealth configuration exported into a reusable package
-- [ ] NS Wealth site created, all software installed, no errors
-- [ ] Non-HR menus hidden on NS Wealth
-- [ ] One Company record created for NS Wealth
+- [x] Configuration exported into a reusable package — the `manthan_hrms` app:
+  - `setup/clients.py`: per-client config (company, abbr, domain, brand) chosen by `manthan_hrms_client` in
+    site_config (no key = `prudeno-wealth`). `day1` reads it, so day2/day3 follow. No code edits per client.
+  - Fixtures: Leave Types, Designations, Role *Manthan Compliance Reviewer*, Custom DocPerm *Employee Separation*,
+    Role Profile *Manthan HR Reviewer*, Workflow States / Actions / Workflow *Fit and Proper Review*.
+  - **Removed** the Module Profile fixture: it held prudeno-prod's 63 blocked modules (BSE, NSE, SM-SYNC…), which don't
+    exist on other sites. Day 1 builds it from the site's own modules.
+  - Still in setup code (company-specific): certification Notifications, onboarding template, Payroll Settings row.
+  - `run_sprint8`: setup wizard for the client company (the one Company), Day 1 Sprint 1 (module profile + HR user),
+    exit access, site-wide branding. `verify_sprint8`: apps, wizard, company, package contents, menus hidden, and on a
+    dedicated site exactly one Company, login brand, no Error Log. Passes 13/13 on prudeno-prod.
+- [x] NS Wealth site created, all software installed, no errors — `nswealth.localhost`, 0 Error Logs
+- [x] Non-HR menus hidden on NS Wealth — Module Profile built from that site's own modules
+- [x] One Company record created for NS Wealth — **NS Wealth** (`NSW`), 81 accounts `… - NSW`
+- [x] NS Wealth branding site-wide: login + desk logo, favicon, app name, `--primary #5B8A37` / `--btn-primary #4A702D`
 
-Notes / open questions:
-- Commit both app repos first (nothing committed yet).
-- Package = `manthan_hrms` app itself: day1–day3 setup modules are already company-parameterised via `COMPANY_*` constants → refactor constants into a per-client config (e.g. `setup/clients.py` or site_config) instead of editing code per client.
-- Candidates for new fixtures: Notifications (certification), Workflow "Fit and Proper Review" + Workflow States/Actions, Role "Manthan Compliance Reviewer", Role Profile "Manthan HR Reviewer", Employee Onboarding Template (company-specific — keep in setup code).
-- Payroll Settings multi-company row must be added for NS Wealth (or single-company on its own site).
-- New site: `bench new-site <ns-wealth site> --install-app erpnext hrms india_payroll manthan_hrms` (check memory note on bench build/module clash first).
+`verify_sprint8` on nswealth.localhost: **17/17**.
+
+```bash
+cd ~/piyush/work/spring-money/frappe-bench
+N=nswealth.localhost
+# prompts for the MariaDB root password
+bench new-site $N --db-root-username root \
+  --install-app erpnext --install-app hrms --install-app india_payroll --install-app manthan_hrms
+# BOTH keys before run_sprint8 — the client key is what names the company, users and brand
+bench --site $N set-config manthan_hrms_client ns-wealth
+bench --site $N set-config -p manthan_hrms_dedicated_site 1
+bench --site $N execute manthan_hrms.setup.day4.run_sprint8
+bench --site $N execute manthan_hrms.setup.day4.verify_sprint8
+```
+
+**Gotcha hit on this site**: it was first set up without `manthan_hrms_client`, so `clients.py` fell back to
+`DEFAULT_CLIENT` and built it as *Prudeno Wealth* (company `PW`, `hr.test@prudenowealth.example`, Prudeno teal).
+Two consequences, both handled:
+- `get_client_key(strict=True)` now **throws** when a site sets `manthan_hrms_dedicated_site` without
+  `manthan_hrms_client`. `day1` resolves its constants strictly, so every sprint fails loudly; the branding boot
+  hook stays non-strict (it must never raise on a desk load).
+- `day4.reset_client_site()` repairs such a site while it is still empty (refuses if any Employee or GL Entry
+  exists): clears the single-doctype pointers, deletes the stale company's departments/warehouses/mode-of-payment
+  rows, deletes the Company (`on_trash` takes its accounts and cost centers), removes the other client's HR user,
+  then rebuilds via ERPNext's own `install_company` + `set_default_settings`. Run `run_sprint8` after it.
+
+Two more fixes found while verifying:
+- **Login colour needs `!important`**: Website Settings `head_html` is injected in `<head>`, but the website bundle
+  defines `--primary` / `--btn-primary` on `:root` and loads after it, so the plain declarations lost. The logo and
+  favicon were fine; only the colour silently stayed Frappe black. `get_login_head_html` now marks all three
+  declarations `!important` (verified: login button computes `rgb(74, 112, 45)` = `#4A702D`).
+- **Day 3 reminder check was date-bound**: it required a Notification Log created *today*, so it failed on every day
+  after the sprint ran. `get_reminder_log(employee, since=None)` now takes the date only where it matters — the send
+  path passes `today()` to avoid notifying twice; verification just checks the reminder exists.
+
+NS Wealth: company **NS Wealth** (abbr `NSW`, fake domain `nswealth.example`), brand `#5B8A37` / buttons `#4A702D`.
+Day 5 (Sprint 9) then runs day1 `run_sprint2` → day3 `run_sprint6` on that site.

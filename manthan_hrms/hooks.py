@@ -12,9 +12,9 @@ required_apps = ["frappe/erpnext", "frappe/hrms", "india_payroll"]
 
 # Company-agnostic HR config, reused as-is on every client site (Prudeno Wealth, NS Wealth).
 # Company-specific records (Company, Departments, Holiday List, Leave Policy) are created by
-# manthan_hrms.setup.day1 instead, because their names depend on the company.
+# manthan_hrms.setup.day1 instead, because their names depend on the company. So is the Module
+# Profile "Manthan HR Only": it blocks the modules installed on that site, which differ per site.
 fixtures = [
-	{"dt": "Module Profile", "filters": [["name", "=", "Manthan HR Only"]]},
 	{"dt": "Leave Type", "filters": [["name", "in", ["Casual Leave", "Sick Leave", "Earned Leave"]]]},
 	{
 		"dt": "Designation",
@@ -33,6 +33,16 @@ fixtures = [
 		],
 	},
 ]
+# Fit and Proper Declaration review (Sprint 6 feature 2), identical on every client site
+fixtures += [
+	{"dt": "Role", "filters": [["name", "=", "Manthan Compliance Reviewer"]]},
+	# Employee Separation is System Manager only in hrms v15; the reviewer role runs exits (Sprint 7 fix)
+	{"dt": "Custom DocPerm", "filters": [["parent", "=", "Employee Separation"]]},
+	{"dt": "Role Profile", "filters": [["name", "=", "Manthan HR Reviewer"]]},
+	{"dt": "Workflow State", "filters": [["name", "in", ["Draft", "Pending Review", "Approved", "Rejected"]]]},
+	{"dt": "Workflow Action Master", "filters": [["name", "in", ["Submit for Review", "Approve", "Reject"]]]},
+	{"dt": "Workflow", "filters": [["name", "=", "Fit and Proper Review"]]},
+]
 
 # Each item in the list will be shown as an app in the apps page
 # add_to_apps_screen = [
@@ -50,7 +60,14 @@ fixtures = [
 
 # include js, css files in header of desk.html
 # app_include_css = "/assets/manthan_hrms/css/manthan_hrms.css"
-# app_include_js = "/assets/manthan_hrms/js/manthan_hrms.js"
+# plain file (no bundle): a no-op unless boot carries the client brand
+app_include_js = [
+	"/assets/manthan_hrms/js/manthan_branding.js",
+	"/assets/manthan_hrms/js/quick_checkin.js",
+]
+
+# client logo + colours for Manthan HR users (every user on a dedicated client site)
+extend_bootinfo = "manthan_hrms.branding.boot.extend_bootinfo"
 
 # include js, css files in header of web template
 # web_include_css = "/assets/manthan_hrms/css/manthan_hrms.css"

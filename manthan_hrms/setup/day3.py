@@ -382,16 +382,18 @@ def create_certification_notifications():
 		notification.insert(ignore_permissions=True, set_name=name)
 
 
-def get_reminder_log(employee):
-	return frappe.db.exists(
-		"Notification Log",
-		{
-			"for_user": TEST_HR_USER,
-			"document_type": "Employee",
-			"document_name": employee,
-			"creation": [">=", today()],
-		},
-	)
+def get_reminder_log(employee, since=None):
+	"""since: only reminders sent on/after this date. The send path passes today so a re-run does not
+	notify twice; verification passes nothing, because the reminder stays valid on later days."""
+	filters = {
+		"for_user": TEST_HR_USER,
+		"document_type": "Employee",
+		"document_name": employee,
+		"subject": ["like", "%NISM%"],
+	}
+	if since:
+		filters["creation"] = [">=", since]
+	return frappe.db.exists("Notification Log", filters)
 
 
 def send_certification_reminders():
@@ -399,7 +401,7 @@ def send_certification_reminders():
 	for name in NOTIFICATIONS:
 		notification = frappe.get_doc("Notification", name)
 		for doc in notification.get_documents_for_today():
-			if not get_reminder_log(doc.name):
+			if not get_reminder_log(doc.name, since=today()):
 				notification.send(doc)
 
 
