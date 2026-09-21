@@ -62,6 +62,35 @@ CUSTOM_FIELDS = {
 			"fieldtype": "Date",
 			"insert_after": "euin_number",
 		},
+		{
+			"fieldname": "regulatory_codes_cb",
+			"fieldtype": "Column Break",
+			"insert_after": "arn_valid_upto",
+		},
+		{
+			"fieldname": "ria_code",
+			"label": "RIA Code",
+			"fieldtype": "Data",
+			"insert_after": "regulatory_codes_cb",
+		},
+		{
+			"fieldname": "pms_code",
+			"label": "PMS Code",
+			"fieldtype": "Data",
+			"insert_after": "ria_code",
+		},
+		{
+			"fieldname": "ra_code",
+			"label": "RA Code",
+			"fieldtype": "Data",
+			"insert_after": "pms_code",
+		},
+		{
+			"fieldname": "aif_code",
+			"label": "AIF Code",
+			"fieldtype": "Data",
+			"insert_after": "ra_code",
+		},
 	],
 	# Feature 3: Client Book Handover & Exit Compliance Checklist
 	"Employee Separation": [
