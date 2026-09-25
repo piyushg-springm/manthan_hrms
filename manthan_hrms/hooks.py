@@ -189,6 +189,9 @@ doc_events = {
 	"Employee Separation": {
 		"before_submit": "manthan_hrms.compliance.employee_separation.validate_exit_checklist",
 	},
+	"Company": {
+		"on_update": "manthan_hrms.compliance.company.sync_regulatory_codes",
+	},
 }
 
 # Scheduled Tasks

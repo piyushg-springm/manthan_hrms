@@ -10,7 +10,53 @@ NISM_CERTIFICATIONS = [
 	"Other",
 ]
 
+# Firm-level SEBI/AMFI registrations: entered on Company, copied read-only to its employees
+COMPANY_REGULATORY_FIELDS = ("arn_number", "ria_code", "pms_code", "ra_code", "aif_code")
+
 CUSTOM_FIELDS = {
+	"Company": [
+		{
+			"fieldname": "regulatory_registration_section",
+			"label": "Regulatory Registration",
+			"fieldtype": "Section Break",
+			"insert_after": "registration_details",
+		},
+		{
+			"fieldname": "arn_number",
+			"label": "ARN Number",
+			"fieldtype": "Data",
+			"insert_after": "regulatory_registration_section",
+		},
+		{
+			"fieldname": "ria_code",
+			"label": "RIA Code",
+			"fieldtype": "Data",
+			"insert_after": "arn_number",
+		},
+		{
+			"fieldname": "regulatory_registration_cb",
+			"fieldtype": "Column Break",
+			"insert_after": "ria_code",
+		},
+		{
+			"fieldname": "pms_code",
+			"label": "PMS Code",
+			"fieldtype": "Data",
+			"insert_after": "regulatory_registration_cb",
+		},
+		{
+			"fieldname": "ra_code",
+			"label": "RA Code",
+			"fieldtype": "Data",
+			"insert_after": "pms_code",
+		},
+		{
+			"fieldname": "aif_code",
+			"label": "AIF Code",
+			"fieldtype": "Data",
+			"insert_after": "ra_code",
+		},
+	],
 	# Feature 1: Regulatory Certification & License Tracker
 	"Employee": [
 		{
@@ -48,6 +94,8 @@ CUSTOM_FIELDS = {
 			"fieldname": "arn_number",
 			"label": "ARN Number",
 			"fieldtype": "Data",
+			"fetch_from": "company.arn_number",
+			"read_only": 1,
 			"insert_after": "regulatory_certification_cb",
 		},
 		{
@@ -71,24 +119,32 @@ CUSTOM_FIELDS = {
 			"fieldname": "ria_code",
 			"label": "RIA Code",
 			"fieldtype": "Data",
+			"fetch_from": "company.ria_code",
+			"read_only": 1,
 			"insert_after": "regulatory_codes_cb",
 		},
 		{
 			"fieldname": "pms_code",
 			"label": "PMS Code",
 			"fieldtype": "Data",
+			"fetch_from": "company.pms_code",
+			"read_only": 1,
 			"insert_after": "ria_code",
 		},
 		{
 			"fieldname": "ra_code",
 			"label": "RA Code",
 			"fieldtype": "Data",
+			"fetch_from": "company.ra_code",
+			"read_only": 1,
 			"insert_after": "pms_code",
 		},
 		{
 			"fieldname": "aif_code",
 			"label": "AIF Code",
 			"fieldtype": "Data",
+			"fetch_from": "company.aif_code",
+			"read_only": 1,
 			"insert_after": "ra_code",
 		},
 	],

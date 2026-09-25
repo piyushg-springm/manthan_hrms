@@ -1,5 +1,6 @@
 import click
 
+from manthan_hrms.compliance.company import sync_all_companies
 from manthan_hrms.setup.custom_fields import make_custom_fields
 
 
@@ -12,3 +13,4 @@ def after_install():
 
 def after_migrate():
 	make_custom_fields()
+	sync_all_companies()

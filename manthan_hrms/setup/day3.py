@@ -60,15 +60,16 @@ PAYROLL_START = "2026-09-01"
 PAYROLL_END = "2026-09-30"
 HAND_CHECK_EMPLOYEES = ("Aarav", "Priya", "Ishita")
 
-# Feature 1: made-up certificates; one expiry is moved to today + REMINDER_DAYS at run time
+# Feature 1: made-up firm ARN (on Company) and certificates; one expiry is moved to today + REMINDER_DAYS at run time
 REMINDER_DAYS = 30
 REMINDER_EMPLOYEE = "Priya"
+COMPANY_ARN = "ARN-PILOT-0001"
 CERTIFICATIONS = {
-	"Aarav": (NISM_CERTIFICATIONS[0], "NISM-VA-PILOT-0001", "2027-08-31", "ARN-PILOT-0001", "E-PILOT-0001", "2028-03-31"),
-	"Priya": (NISM_CERTIFICATIONS[0], "NISM-VA-PILOT-0002", None, "ARN-PILOT-0002", "E-PILOT-0002", "2028-06-30"),
-	"Rohan": (NISM_CERTIFICATIONS[0], "NISM-VA-PILOT-0003", "2027-02-28", "ARN-PILOT-0003", "E-PILOT-0003", "2027-12-31"),
-	"Kavya": (NISM_CERTIFICATIONS[1], "NISM-XA-PILOT-0004", "2027-05-31", None, None, None),
-	"Siddharth": (NISM_CERTIFICATIONS[1], "NISM-XA-PILOT-0005", "2027-11-30", None, None, None),
+	"Aarav": (NISM_CERTIFICATIONS[0], "NISM-VA-PILOT-0001", "2027-08-31", "E-PILOT-0001", "2028-03-31"),
+	"Priya": (NISM_CERTIFICATIONS[0], "NISM-VA-PILOT-0002", None, "E-PILOT-0002", "2028-06-30"),
+	"Rohan": (NISM_CERTIFICATIONS[0], "NISM-VA-PILOT-0003", "2027-02-28", "E-PILOT-0003", "2027-12-31"),
+	"Kavya": (NISM_CERTIFICATIONS[1], "NISM-XA-PILOT-0004", "2027-05-31", None, None),
+	"Siddharth": (NISM_CERTIFICATIONS[1], "NISM-XA-PILOT-0005", "2027-11-30", None, None),
 }
 NOTIFICATIONS = {
 	"NISM Certificate Expiring": (
@@ -342,7 +343,10 @@ def run_payroll():
 
 
 def set_certification_data():
-	for first_name, (certification, certificate_no, nism_valid_upto, arn, euin, arn_valid_upto) in CERTIFICATIONS.items():
+	company = frappe.get_doc("Company", COMPANY_NAME)
+	company.arn_number = COMPANY_ARN
+	company.save()  # on_update pushes the ARN to every employee of the company
+	for first_name, (certification, certificate_no, nism_valid_upto, euin, arn_valid_upto) in CERTIFICATIONS.items():
 		if first_name == REMINDER_EMPLOYEE:
 			nism_valid_upto = add_days(today(), REMINDER_DAYS)
 		frappe.db.set_value(
@@ -352,7 +356,6 @@ def set_certification_data():
 				"nism_certification": certification,
 				"nism_certificate_no": certificate_no,
 				"nism_valid_upto": nism_valid_upto,
-				"arn_number": arn,
 				"euin_number": euin,
 				"arn_valid_upto": arn_valid_upto,
 			},
@@ -707,6 +710,11 @@ def verify_day3():
 		(
 			"Certification fields on Employee",
 			all(frappe.get_meta("Employee").has_field(f) for f in ("nism_certification", "nism_valid_upto", "arn_number", "euin_number", "arn_valid_upto")),
+		),
+		("Regulatory codes on Company", frappe.get_meta("Company").has_field("arn_number")),
+		(
+			"Company ARN on all its employees",
+			not frappe.db.count("Employee", {"company": COMPANY_NAME, "arn_number": ["!=", COMPANY_ARN]}),
 		),
 		(
 			f"Certificate data on {len(CERTIFICATIONS)} employees",
